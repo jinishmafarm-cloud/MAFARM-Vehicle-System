@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAFARM Vehicle Statutory Management</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="mafarm-logo.png" alt="MAFARM Logo">
+        <div>
+          <strong>MAFARM</strong>
+          <span>Operations</span>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-page="dashboard">▦ <span>Dashboard</span></button>
+        <button class="nav-btn" data-page="vehicles">🚚 <span>Vehicles</span></button>
+        <button class="nav-btn" data-page="expiring">⏰ <span>Expiring / Expired</span></button>
+        <button class="nav-btn" data-page="reports">📊 <span>Reports</span></button>
+        <button class="nav-btn" data-page="settings">⚙ <span>Settings</span></button>
+      </nav>
+      <div class="sidebar-footer">Vehicle Statutory Control<br><small>Version 1.0</small></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Vehicle Statutory Dashboard</h1>
+          <p id="todayText"></p>
+        </div>
+        <div class="top-actions">
+          <button class="btn secondary" id="importBtn">Import Excel</button>
+          <button class="btn primary" id="addVehicleBtn">+ Add Vehicle</button>
+          <input type="file" id="excelInput" accept=".xlsx,.xls" hidden>
+        </div>
+      </header>
+
+      <section id="dashboard" class="page active">
+        <div class="hero">
+          <div>
+            <span class="eyebrow">STATUTORY COMPLIANCE</span>
+            <h2>Stay ahead of every vehicle expiry.</h2>
+            <p>Any Fitness, Insurance, Tax or Pollution expiry within the next <b>30 days</b> is highlighted and can trigger an email alert to <b>operationhead@mafarm.in</b>.</p>
+          </div>
+          <div class="hero-date">
+            <span>Today</span>
+            <strong id="heroDate"></strong>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="card"><span>Total Vehicles</span><strong id="totalVehicles">0</strong><small>Active records</small></div>
+          <div class="card warning"><span>Expiring ≤ 30 Days</span><strong id="expiring30">0</strong><small>Action required</small></div>
+          <div class="card danger"><span>Already Expired</span><strong id="expiredCount">0</strong><small>Immediate attention</small></div>
+          <div class="card success"><span>Compliant</span><strong id="compliantCount">0</strong><small>No immediate expiry</small></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><h3>Upcoming Statutory Expiries</h3><button class="text-btn" data-goto="expiring">View All</button></div>
+            <div id="dashboardAlerts" class="alert-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Compliance by Type</h3></div>
+            <div id="typeSummary" class="type-summary"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="vehicles" class="page">
+        <div class="toolbar">
+          <input id="searchInput" class="search" placeholder="Search vehicle number, model or unit...">
+          <select id="unitFilter"><option value="">All Units</option></select>
+          <select id="statusFilter">
+            <option value="">All Status</option>
+            <option value="expired">Expired</option>
+            <option value="30">Expiring within 30 days</option>
+            <option value="safe">More than 30 days</option>
+          </select>
+        </div>
+        <div class="panel table-panel">
+          <div class="panel-head"><h3>Vehicle Statutory Register</h3><span id="recordCount"></span></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vehicle</th><th>Model</th><th>Unit</th><th>Responsible Person</th><th>Fitness</th><th>Insurance</th><th>Tax</th><th>Pollution</th><th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="vehicleTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="expiring" class="page">
+        <div class="hero compact">
+          <div><span class="eyebrow">ACTION CENTRE</span><h2>Expired & next 30 days</h2><p>Update the expiry date after renewal. The dashboard recalculates automatically. Each vehicle can be emailed to its responsible person in a clear compliance table.</p></div>
+          <button class="btn primary" id="sendAlertBtn">Send Alert Email Now</button>
+        </div>
+        <div class="panel table-panel">
+          <div class="panel-head"><h3>Items Requiring Attention</h3><span id="attentionCount"></span></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Vehicle</th><th>Unit</th><th>Document</th><th>Expiry</th><th>Days</th><th>Status</th><th>Update</th></tr></thead>
+            <tbody id="attentionTable"></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <section id="reports" class="page">
+        <div class="panel">
+          <div class="panel-head"><h3>Compliance Report</h3><button class="btn secondary" id="exportBtn">Download Excel</button></div>
+          <div id="reportCards" class="report-grid"></div>
+        </div>
+      </section>
+
+      <section id="settings" class="page">
+        <div class="panel settings-panel">
+          <h3>Alert Settings</h3>
+          <label>Operation Head Email
+            <input id="alertEmail" value="operationhead@mafarm.in">
+          </label>
+          <label>Alert Window (days)
+            <input id="alertWindow" type="number" min="1" max="365" value="30">
+          </label>
+          <label>Backend Web App URL
+            <input id="backendUrl" placeholder="Paste your Google Apps Script Web App URL here">
+          </label>
+          <button class="btn primary" id="saveSettings">Save Settings</button>
+          <button class="btn secondary" id="migrateVehiclesBtn" style="margin-top:10px">Migrate Original 43 Vehicles to Firebase</button>
+          <div id="firebaseStatus" class="note" style="margin-top:10px;background:#fff6db;border-color:#f0dfaa;">
+            <b>Firebase:</b> Connecting to shared cloud database...
+          </div>
+          <div class="note">
+            <b>Automatic email:</b> a browser-only HTML site cannot send scheduled emails by itself.
+            Use the included <b>Code.gs</b> Google Apps Script as the backend. It can check the Google Sheet daily
+            and send an email when an item enters the configured alert window.
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="vehicleModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head"><h3 id="modalTitle">Update Vehicle</h3><button class="close" id="closeModal">×</button></div>
+      <form id="vehicleForm">
+        <input type="hidden" id="editIndex">
+        <div class="form-grid">
+          <label>Vehicle No<input id="fVehicleNo" required></label>
+          <label>Model<input id="fModel"></label>
+          <label>Vehicle Type<input id="fVehicleType"></label>
+          <label>Unit<input id="fUnit"></label>
+          <label>Responsible Person<input id="fResponsible" placeholder="Responsible person"></label>
+          <label>Responsible Email<input id="fResponsibleEmail" type="email" placeholder="responsible@mafarm.in"></label>
+          <label>Registration Date<input id="fReg" type="date"></label>
+          <label>Fitness Expiry<input id="fFitness" type="date"></label>
+          <label>Insurance Expiry<input id="fInsurance" type="date"></label>
+          <label>Tax Expiry<input id="fTax" type="date"></label>
+          <label>Pollution Due<input id="fPollution" type="date"></label>
+        </div>
+        <div class="modal-actions"><button type="button" class="btn secondary" id="cancelModal">Cancel</button><button class="btn primary">Save Vehicle</button></div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
