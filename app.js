@@ -5,12 +5,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebas
 import {
   getFirestore,
   collection,
-  onSnapshot,
   doc,
+  getDoc,
+  onSnapshot,
   setDoc,
   getDocs,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA_LX4yZFVjyQ-PTqmlD-pzvjVfTcFHSNw",
@@ -23,12 +27,57 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+const db = getFirestore(firebaseApp);\nconst auth = getAuth(firebaseApp);\nlet currentRole = null;\nlet currentUserProfile = null;
 const vehiclesRef = collection(db, "Vehicles");
 let firebaseReady = false;
 let firebaseUnsubscribe = null;
 
-const INITIAL_DATA = [
+
+// Employee-code login: employee codes are converted to Firebase Auth aliases.
+// Admin 150884 uses the already-created operationhead@mafarm.in account.
+function loginEmailForCode(code) {
+  const normalized = String(code || "").trim();
+  if (normalized === "150884") return "operationhead@mafarm.in";
+  return `${normalized}@mafarm-login.mafarm.in`;
+}
+function setAccessUI(role) {
+  const admin = role === "admin";
+  $("addVehicleBtn").hidden = !admin;
+  $("importBtn").hidden = !admin;
+  $("migrateVehiclesBtn").hidden = !admin;
+  $("vehicleModal").querySelectorAll("input,button").forEach(el => {
+    if (el.id !== "closeModal" && el.id !== "cancelModal") el.disabled = !admin;
+  });
+  $("vehicleModal").querySelector(".modal-actions").hidden = !admin;
+  document.querySelectorAll(".action-btn").forEach(el => {
+    if (el.classList.contains("mail-btn")) return;
+    el.hidden = !admin;
+  });
+  $("authUserLabel").textContent = currentUserProfile?.name || currentUserProfile?.employeeCode || "Signed in";
+  $("logoutBtn").hidden = false;
+}
+function showLogin(message = "") {
+  $("loginOverlay").hidden = false;
+  $("loginMessage").textContent = message;
+  $("appShell").hidden = true;
+}
+async function handleLogin(event) {
+  event.preventDefault();
+  const code = $("loginEmployeeCode").value.trim();
+  const password = $("loginPassword").value;
+  if (!code || !password) return;
+  $("loginSubmit").disabled = true;
+  $("loginMessage").textContent = "Signing in...";
+  try {
+    await signInWithEmailAndPassword(auth, loginEmailForCode(code), password);
+  } catch (error) {
+    console.error(error);
+    $("loginMessage").textContent = "Login failed. Check employee code and password, or contact the administrator.";
+  } finally {
+    $("loginSubmit").disabled = false;
+  }
+}
+\nconst INITIAL_DATA = [
   {
     "sl": 1,
     "vehicleNo": "KL 75 C 1725",
@@ -769,7 +818,7 @@ function renderVehicles(){
       <td>${v.model||"—"}</td><td>${v.unit||"—"}</td>
       <td><span class="vehicle-name">${v.responsiblePerson||"Not Assigned"}</span><br><span class="muted">${v.responsibleEmail||""}</span></td>
       ${docs.map(([doc,key])=>`<td><span class="date-status ${status(v[key])==='expired'?'red':status(v[key])==='warning'?'amber':'green'}">${fmt(v[key])}</span><br><span class="muted">${statusLabel(v[key])}</span></td>`).join("")}
-      <td class="actions-cell"><button class="action-btn" onclick="editVehicle(${i})">Update</button>
+      <td class="actions-cell">${currentRole === "admin" ? `<button class="action-btn" onclick="editVehicle(${i})">Update</button>` : ""} 
       <button class="action-btn mail-btn" onclick="sendVehicleEmail(${i})">✉ Send</button></td>
     </tr>`);
   });
@@ -788,7 +837,7 @@ function renderAttention(){
       <td>${fmt(x.date)}</td>
       <td class="${x.days<0?'date-status red':'date-status amber'}">${statusLabel(x.date)}</td>
       <td><span class="pill ${x.days<0?'red':'amber'}">${x.days<0?'EXPIRED':'DUE SOON'}</span></td>
-      <td><button class="action-btn" onclick="editVehicle(${x.vi})">Update Date</button></td>
+      <td>${currentRole === "admin" ? `<button class="action-btn" onclick="editVehicle(${x.vi})">Update Date</button>` : "View only"}</td>
     </tr>`).join("") || `<tr><td colspan="7" class="muted">Nothing requires attention.</td></tr>`;
 }
 
@@ -1069,5 +1118,43 @@ $("vehicleForm").addEventListener("submit",async e=>{
 $("alertEmail").value=state.alertEmail;
 $("alertWindow").value=state.alertWindow;
 $("backendUrl").value=state.backendUrl;
+
 render();
-subscribeToVehicles();
+$("loginForm").addEventListener("submit", handleLogin);
+$("logoutBtn").addEventListener("click", async () => { await signOut(auth); });
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    currentRole = null; currentUserProfile = null;
+    if (firebaseUnsubscribe) { firebaseUnsubscribe(); firebaseUnsubscribe = null; }
+    showLogin();
+    return;
+  }
+  try {
+    const profileSnap = await getDoc(doc(db, "User", user.uid));
+    if (!profileSnap.exists()) {
+      await signOut(auth);
+      showLogin("Your employee account is not registered in MAFARM. Contact the administrator.");
+      return;
+    }
+    currentUserProfile = profileSnap.data();
+    if (currentUserProfile.active !== true) {
+      await signOut(auth);
+      showLogin("Your account is inactive. Contact the administrator.");
+      return;
+    }
+    currentRole = String(currentUserProfile.role || "").toLowerCase();
+    if (!["admin", "employee"].includes(currentRole)) {
+      await signOut(auth);
+      showLogin("Your account role is not configured. Contact the administrator.");
+      return;
+    }
+    $("loginOverlay").hidden = true;
+    $("appShell").hidden = false;
+    setAccessUI(currentRole);
+    subscribeToVehicles();
+  } catch (error) {
+    console.error(error);
+    await signOut(auth);
+    showLogin("Unable to verify your account. Check Firestore rules and try again.");
+  }
+});
