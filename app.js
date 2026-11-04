@@ -666,3 +666,730 @@ const docs = [
 ];
 
 const $ = id => document.getElementById(id);
+// ============================================================
+// GENERAL FUNCTIONS
+// ============================================================
+
+function saveData() {
+  // Vehicle data is stored in Firestore.
+  // Alert settings remain local to this browser.
+}
+
+function vehicleDocId(vehicleNo) {
+  return String(vehicleNo || "vehicle")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80) || `vehicle-${Date.now()}`;
+}
+
+function cleanVehicle(v) {
+  const copy = { ...v };
+  delete copy._id;
+  return copy;
+}
+
+// ============================================================
+// FIREBASE STATUS
+// ============================================================
+
+function setFirebaseStatus(message, connected = false, error = false) {
+  const el = $("firebaseStatus");
+  if (!el) return;
+
+  el.innerHTML = `<b>Firebase:</b> ${message}`;
+
+  el.style.background = error
+    ? "#fdecec"
+    : connected
+      ? "#edf5ea"
+      : "#fff6db";
+
+  el.style.borderColor = error
+    ? "#efb7b7"
+    : connected
+      ? "#d5e7cf"
+      : "#f0dfaa";
+}
+
+// ============================================================
+// FIRESTORE VEHICLE LISTENER
+// ============================================================
+
+function subscribeToVehicles() {
+  if (firebaseUnsubscribe) {
+    firebaseUnsubscribe();
+  }
+
+  setFirebaseStatus("Connecting to shared cloud database...");
+
+  firebaseUnsubscribe = onSnapshot(
+    vehiclesRef,
+
+    (snapshot) => {
+      firebaseReady = true;
+      state.cloudConnected = true;
+
+      if (snapshot.empty) {
+        state.vehicles = [...INITIAL_DATA];
+      } else {
+        state.vehicles = snapshot.docs
+          .map(d => ({
+            ...d.data(),
+            _id: d.id
+          }))
+          .sort((a, b) =>
+            (Number(a.sl) || 999999) -
+            (Number(b.sl) || 999999)
+          );
+      }
+
+      setFirebaseStatus(
+        "Connected — shared vehicle database is active.",
+        true
+      );
+
+      render();
+    },
+
+    (error) => {
+      console.error("Firestore listener error:", error);
+
+      firebaseReady = false;
+      state.cloudConnected = false;
+
+      setFirebaseStatus(
+        "Connection failed. Check Firestore Rules and internet.",
+        false,
+        true
+      );
+
+      render();
+    }
+  );
+}
+
+// ============================================================
+// MIGRATE ORIGINAL 43 VEHICLES
+// ============================================================
+
+async function migrateOriginalVehicles() {
+  if (!firebaseReady) {
+    throw new Error("Firebase is not connected yet.");
+  }
+
+  const snapshot = await getDocs(vehiclesRef);
+
+  const existingByVehicle = new Map();
+
+  snapshot.docs.forEach(d => {
+    const data = d.data();
+
+    if (data.vehicleNo) {
+      existingByVehicle.set(
+        String(data.vehicleNo).trim().toUpperCase(),
+        d.id
+      );
+    }
+  });
+
+  const batch = writeBatch(db);
+  const originalIds = new Set();
+
+  INITIAL_DATA.forEach((vehicle, index) => {
+    const key = String(vehicle.vehicleNo)
+      .trim()
+      .toUpperCase();
+
+    const id =
+      existingByVehicle.get(key) ||
+      vehicleDocId(vehicle.vehicleNo);
+
+    originalIds.add(id);
+
+    batch.set(
+      doc(db, "Vehicles", id),
+      cleanVehicle({
+        ...vehicle,
+        sl: vehicle.sl || index + 1
+      }),
+      { merge: false }
+    );
+  });
+
+  snapshot.docs.forEach(d => {
+    const data = d.data();
+
+    const key = data.vehicleNo
+      ? String(data.vehicleNo).trim().toUpperCase()
+      : "";
+
+    if (
+      key &&
+      INITIAL_DATA.some(
+        v => String(v.vehicleNo).trim().toUpperCase() === key
+      ) &&
+      !originalIds.has(d.id)
+    ) {
+      batch.delete(d.ref);
+    }
+  });
+
+  await batch.commit();
+}
+
+// ============================================================
+// ADD VEHICLE
+// ============================================================
+
+async function addVehicleToCloud(vehicle) {
+  if (!firebaseReady) {
+    throw new Error("Firebase is not connected yet.");
+  }
+
+  const id = vehicleDocId(vehicle.vehicleNo);
+
+  await setDoc(
+    doc(db, "Vehicles", id),
+    cleanVehicle(vehicle),
+    { merge: true }
+  );
+}
+
+// ============================================================
+// UPDATE VEHICLE
+// ============================================================
+
+async function updateVehicleInCloud(id, vehicle) {
+  if (!firebaseReady) {
+    throw new Error("Firebase is not connected yet.");
+  }
+
+  const newId = vehicleDocId(vehicle.vehicleNo);
+
+  if (id && id !== newId) {
+    const batch = writeBatch(db);
+
+    batch.set(
+      doc(db, "Vehicles", newId),
+      cleanVehicle(vehicle),
+      { merge: true }
+    );
+
+    batch.delete(doc(db, "Vehicles", id));
+
+    await batch.commit();
+  } else {
+    await setDoc(
+      doc(db, "Vehicles", newId),
+      cleanVehicle(vehicle),
+      { merge: true }
+    );
+  }
+}
+
+// ============================================================
+// REPLACE VEHICLE REGISTER
+// ============================================================
+
+async function replaceAllVehiclesInCloud(vehicles) {
+  if (!firebaseReady) {
+    throw new Error("Firebase is not connected yet.");
+  }
+
+  const snapshot = await getDocs(vehiclesRef);
+  const batch = writeBatch(db);
+
+  snapshot.docs.forEach(d => {
+    batch.delete(d.ref);
+  });
+
+  vehicles.forEach((v, i) => {
+    const ref = doc(
+      db,
+      "Vehicles",
+      vehicleDocId(v.vehicleNo)
+    );
+
+    batch.set(
+      ref,
+      cleanVehicle({
+        ...v,
+        sl: v.sl || i + 1
+      })
+    );
+  });
+
+  await batch.commit();
+}
+
+// ============================================================
+// DATE FUNCTIONS
+// ============================================================
+
+function parseDate(v) {
+  if (!v || v === "ELECTRIC") return null;
+
+  const d = new Date(v + "T00:00:00");
+
+  return isNaN(d) ? null : d;
+}
+
+function daysUntil(v) {
+  const d = parseDate(v);
+
+  if (!d) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return Math.ceil((d - today) / 86400000);
+}
+
+function fmt(v) {
+  if (!v || v === "ELECTRIC") {
+    return v === "ELECTRIC" ? "Electric" : "—";
+  }
+
+  const d = parseDate(v);
+
+  return d
+    ? d.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      })
+    : "—";
+}
+
+function status(v) {
+  const n = daysUntil(v);
+
+  if (n === null) return "na";
+  if (n < 0) return "expired";
+  if (n <= state.alertWindow) return "warning";
+
+  return "safe";
+}
+
+function statusLabel(v) {
+  const n = daysUntil(v);
+
+  if (n === null) return "N/A";
+  if (n < 0) return `${Math.abs(n)} days overdue`;
+  if (n === 0) return "Expires today";
+
+  return `${n} days`;
+}
+
+// ============================================================
+// STATUTORY ALERTS
+// ============================================================
+
+function allAlerts() {
+  const out = [];
+
+  state.vehicles.forEach((v, vi) => {
+    docs.forEach(([docName, key]) => {
+      const n = daysUntil(v[key]);
+
+      if (n !== null && n <= state.alertWindow) {
+        out.push({
+          vi,
+          vehicle: v,
+          doc: docName,
+          key,
+          date: v[key],
+          days: n
+        });
+      }
+    });
+  });
+
+  return out.sort((a, b) => a.days - b.days);
+}
+
+// ============================================================
+// MAIN DASHBOARD
+// ============================================================
+
+function render() {
+  const now = new Date();
+
+  $("todayText").textContent =
+    now.toLocaleString("en-IN", {
+      dateStyle: "full"
+    });
+
+  $("heroDate").textContent =
+    now.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+
+  $("totalVehicles").textContent =
+    state.vehicles.length;
+
+  const alerts = allAlerts();
+
+  $("expiring30").textContent =
+    alerts.filter(x => x.days >= 0).length;
+
+  $("expiredCount").textContent =
+    alerts.filter(x => x.days < 0).length;
+
+  $("compliantCount").textContent =
+    state.vehicles.filter(v =>
+      docs.every(([, k]) => {
+        const n = daysUntil(v[k]);
+        return n === null || n > state.alertWindow;
+      })
+    ).length;
+
+  $("dashboardAlerts").innerHTML =
+    alerts.slice(0, 8).map(x => `
+      <div class="alert-row">
+        <span class="vehicle-name">
+          ${x.vehicle.vehicleNo}
+        </span>
+
+        <span class="doc">${x.doc}</span>
+
+        <span>${fmt(x.date)}</span>
+
+        <span class="pill ${x.days < 0 ? "red" : "amber"}">
+          ${statusLabel(x.date)}
+        </span>
+      </div>
+    `).join("") ||
+    `<div class="muted">
+      No statutory item is due within the alert window.
+    </div>`;
+
+  const counts = {
+    Fitness: 0,
+    Insurance: 0,
+    Tax: 0,
+    Pollution: 0
+  };
+
+  state.vehicles.forEach(v => {
+    docs.forEach(([docName, key]) => {
+      const n = daysUntil(v[key]);
+
+      if (n !== null && n <= state.alertWindow) {
+        counts[docName]++;
+      }
+    });
+  });
+
+  const max = Math.max(
+    1,
+    ...Object.values(counts)
+  );
+
+  $("typeSummary").innerHTML =
+    Object.entries(counts).map(([k, n]) => `
+      <div class="type-line">
+        <span>${k}</span>
+
+        <div class="bar">
+          <i style="width:${n / max * 100}%"></i>
+        </div>
+
+        <b>${n}</b>
+      </div>
+    `).join("");
+
+  renderUnits();
+  renderVehicles();
+  renderAttention();
+  renderReports();
+}
+
+// ============================================================
+// UNIT FILTER
+// ============================================================
+
+function renderUnits() {
+  const units = [
+    ...new Set(
+      state.vehicles
+        .map(v => v.unit)
+        .filter(Boolean)
+    )
+  ].sort();
+
+  const current = $("unitFilter").value;
+
+  $("unitFilter").innerHTML =
+    `<option value="">All Units</option>` +
+    units.map(u => `<option>${u}</option>`).join("");
+
+  $("unitFilter").value = current;
+}
+
+// ============================================================
+// VEHICLE REGISTER TABLE
+// ============================================================
+
+function renderVehicles() {
+  const q = $("searchInput").value.toLowerCase();
+  const unit = $("unitFilter").value;
+  const sf = $("statusFilter").value;
+
+  const rows = [];
+
+  state.vehicles.forEach((v, i) => {
+    const match = [
+      v.vehicleNo,
+      v.model,
+      v.unit
+    ].join(" ").toLowerCase().includes(q);
+
+    if (!match || (unit && v.unit !== unit)) {
+      return;
+    }
+
+    const states = docs.map(([, k]) => status(v[k]));
+
+    const vehicleHasExpired =
+      states.includes("expired");
+
+    const vehicleHas30 =
+      states.includes("warning");
+
+    if (sf === "expired" && !vehicleHasExpired) return;
+    if (sf === "30" && !vehicleHas30) return;
+
+    if (
+      sf === "safe" &&
+      (vehicleHasExpired || vehicleHas30)
+    ) {
+      return;
+    }
+
+    rows.push(`
+      <tr>
+        <td>
+          <span class="vehicle-name">${v.vehicleNo}</span>
+          <br>
+          <span class="muted">${v.vehicleType || ""}</span>
+        </td>
+
+        <td>${v.model || "—"}</td>
+        <td>${v.unit || "—"}</td>
+
+        <td>
+          <span class="vehicle-name">
+            ${v.responsiblePerson || "Not Assigned"}
+          </span>
+          <br>
+          <span class="muted">
+            ${v.responsibleEmail || ""}
+          </span>
+        </td>
+
+        ${docs.map(([docName, key]) => `
+          <td>
+            <span class="date-status ${
+              status(v[key]) === "expired"
+                ? "red"
+                : status(v[key]) === "warning"
+                  ? "amber"
+                  : "green"
+            }">
+              ${fmt(v[key])}
+            </span>
+
+            <br>
+
+            <span class="muted">
+              ${statusLabel(v[key])}
+            </span>
+          </td>
+        `).join("")}
+
+        <td class="actions-cell">
+          <button
+            class="action-btn"
+            onclick="editVehicle(${i})">
+            Update
+          </button>
+
+          <button
+            class="action-btn mail-btn"
+            onclick="sendVehicleEmail(${i})">
+            ✉ Send
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+
+  $("vehicleTable").innerHTML =
+    rows.join("") ||
+    `<tr>
+      <td colspan="9" class="muted">
+        No records found.
+      </td>
+    </tr>`;
+
+  $("recordCount").textContent =
+    `${rows.length} record(s)`;
+}
+
+// ============================================================
+// EXPIRY ACTION CENTRE
+// ============================================================
+
+function renderAttention() {
+  const alerts = allAlerts();
+
+  $("attentionCount").textContent =
+    `${alerts.length} item(s)`;
+
+  $("attentionTable").innerHTML =
+    alerts.map(x => `
+      <tr>
+        <td class="vehicle-name">
+          ${x.vehicle.vehicleNo}
+        </td>
+
+        <td>${x.vehicle.unit || "—"}</td>
+        <td>${x.doc}</td>
+        <td>${fmt(x.date)}</td>
+
+        <td class="${
+          x.days < 0
+            ? "date-status red"
+            : "date-status amber"
+        }">
+          ${statusLabel(x.date)}
+        </td>
+
+        <td>
+          <span class="pill ${
+            x.days < 0 ? "red" : "amber"
+          }">
+            ${x.days < 0 ? "EXPIRED" : "DUE SOON"}
+          </span>
+        </td>
+
+        <td>
+          <button
+            class="action-btn"
+            onclick="editVehicle(${x.vi})">
+            Update Date
+          </button>
+        </td>
+      </tr>
+    `).join("") ||
+    `<tr>
+      <td colspan="7" class="muted">
+        Nothing requires attention.
+      </td>
+    </tr>`;
+}
+
+// ============================================================
+// COMPLIANCE REPORTS
+// ============================================================
+
+function renderReports() {
+  const total = state.vehicles.length;
+  const vals = {};
+
+  docs.forEach(([docName, key]) => {
+    vals[docName] = state.vehicles.reduce(
+      (n, v) =>
+        n + (
+          daysUntil(v[key]) !== null &&
+          daysUntil(v[key]) <= state.alertWindow
+            ? 1
+            : 0
+        ),
+      0
+    );
+  });
+
+  $("reportCards").innerHTML =
+    Object.entries(vals).map(([k, v]) => `
+      <div class="report-item">
+        <span>${k} due/expired</span>
+        <b>${v}</b>
+      </div>
+    `).join("") +
+
+    `<div class="report-item">
+      <span>Total vehicles</span>
+      <b>${total}</b>
+    </div>`;
+}
+async function sendAlertEmail(){
+  const alerts=allAlerts();
+
+  if(!alerts.length){
+    alert("No expired or upcoming items are currently within the alert window.");
+    return;
+  }
+
+  const subject=`MAFARM Vehicle Statutory Alert – ${alerts.length} item(s)`;
+
+  const rows=alerts.map(x=>`
+    <tr>
+      <td>${x.vehicle.vehicleNo}</td>
+      <td>${x.vehicle.unit||""}</td>
+      <td>${x.doc}</td>
+      <td>${fmt(x.date)}</td>
+      <td>${statusLabel(x.date)}</td>
+    </tr>
+  `).join("");
+
+  const html=`
+    <div style="font-family:Arial">
+      <h2 style="color:#2f6b1f">MAFARM Vehicle Statutory Alert</h2>
+      <p>The following vehicle statutory documents require attention.</p>
+      <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+          <th>Vehicle</th>
+          <th>Unit</th>
+          <th>Document</th>
+          <th>Expiry</th>
+          <th>Status</th>
+        </tr>
+        ${rows}
+      </table>
+      <p>Generated by MAFARM Vehicle Statutory Management System.</p>
+    </div>
+  `;
+
+  if(state.backendUrl){
+    try{
+      const res=await fetch(state.backendUrl,{
+        method:"POST",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify({
+          action:"sendAlert",
+          to:state.alertEmail,
+          subject,
+          html,
+          alerts
+        })
+      });
+
+      const data=await res.json();
+      alert(data.message||"Alert email sent.");
+      return;
+
+    }catch(e){
+      alert("Backend email failed. Please check the Web App URL and deployment.");
+      return;
+    }
+  }
+
+  window.location.href=
+    `mailto:${encodeURIComponent(state.alertEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("Vehicle statutory alert. Please open the system for full details.")}`;
+}
