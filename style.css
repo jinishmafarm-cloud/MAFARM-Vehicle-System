@@ -1,10 +1,4 @@
 
-/* =====================================================
-   MAFARM VEHICLE STATUTORY MANAGEMENT SYSTEM
-   Complete Responsive Stylesheet
-   Dashboard + Vehicles + User Management
-===================================================== */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -17,24 +11,12 @@
   --muted: #829083;
   --border: #e3eae0;
   --background: #f5f8f4;
-  --white: #ffffff;
-  --red: #d74747;
-  --red-light: #fff0ef;
-  --orange: #d58b28;
-  --orange-light: #fff6e7;
-  --blue: #3978b9;
-  --blue-light: #edf5ff;
-  --shadow: 0 5px 20px rgba(36, 53, 42, 0.06);
-  --radius: 13px;
+  --red: #b91c1c;
+  --orange: #92400e;
+  --shadow: 0 5px 20px rgba(36,53,42,.06);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -44,29 +26,11 @@ body {
   font-size: 14px;
 }
 
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-}
+button,input,select,textarea { font-family: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
 
-button {
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-/* =====================================================
-   LOGIN SCREEN
-===================================================== */
+/* LOGIN */
 
 .login-overlay {
   position: fixed;
@@ -76,7 +40,7 @@ button:disabled {
   justify-content: center;
   align-items: center;
   padding: 20px;
-  background: linear-gradient(135deg, #eaf4e6, #f5f8f4);
+  background: linear-gradient(135deg,#eaf4e6,#f5f8f4);
 }
 
 .login-card {
@@ -85,8 +49,8 @@ button:disabled {
   padding: 38px;
   border: 1px solid var(--border);
   border-radius: 20px;
-  background: var(--white);
-  box-shadow: 0 15px 50px rgba(35, 75, 40, 0.12);
+  background: white;
+  box-shadow: 0 15px 50px rgba(35,75,40,.12);
   text-align: center;
 }
 
@@ -94,19 +58,11 @@ button:disabled {
   width: 105px;
   height: 75px;
   object-fit: contain;
-  margin-bottom: 12px;
 }
 
 .login-card h1 {
-  margin: 5px 0;
   color: var(--green-dark);
   font-size: 29px;
-  font-weight: 800;
-}
-
-.login-card > p {
-  margin: 0 0 28px;
-  color: var(--muted);
 }
 
 .login-card label {
@@ -123,30 +79,11 @@ button:disabled {
   padding: 13px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  outline: none;
-  font-size: 14px;
 }
 
-.login-card input:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px var(--green-light);
-}
+.login-card .btn { width: 100%; }
 
-.login-card .btn {
-  width: 100%;
-  margin-top: 8px;
-}
-
-.login-message {
-  min-height: 20px;
-  margin-top: 15px;
-  color: var(--red);
-  font-size: 12px;
-}
-
-/* =====================================================
-   APPLICATION LAYOUT
-===================================================== */
+/* APPLICATION LAYOUT */
 
 .app-shell {
   display: flex;
@@ -155,15 +92,13 @@ button:disabled {
 
 .sidebar {
   position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0 auto 0 0;
   z-index: 100;
   display: flex;
   flex-direction: column;
   width: 245px;
   padding: 23px 15px;
-  background: #ffffff;
+  background: white;
   border-right: 1px solid var(--border);
 }
 
@@ -181,15 +116,12 @@ button:disabled {
 }
 
 .brand strong {
-  display: block;
   color: var(--green-dark);
   font-size: 19px;
-  font-weight: 800;
 }
 
 .brand span {
   display: block;
-  margin-top: 3px;
   color: var(--muted);
   font-size: 11px;
 }
@@ -213,19 +145,15 @@ button:disabled {
   text-align: left;
   font-size: 13px;
   font-weight: 600;
-  transition: 0.2s;
 }
 
-.nav-btn:hover {
-  background: var(--green-soft);
-  color: var(--green-dark);
-}
-
+.nav-btn:hover,
 .nav-btn.active {
   background: var(--green-light);
   color: var(--green-dark);
-  font-weight: 800;
 }
+
+.nav-btn.active { font-weight: 800; }
 
 .sidebar-footer {
   margin-top: auto;
@@ -236,13 +164,7 @@ button:disabled {
   line-height: 1.8;
 }
 
-.sidebar-footer small {
-  color: var(--green);
-}
-
-/* =====================================================
-   MAIN CONTENT AND HEADER
-===================================================== */
+/* MAIN AND HEADER */
 
 .main {
   width: calc(100% - 245px);
@@ -263,21 +185,16 @@ button:disabled {
   margin: 0;
   color: var(--dark);
   font-size: 25px;
-  font-weight: 800;
 }
 
 .topbar p {
-  margin: 7px 0 0;
   color: var(--muted);
   font-size: 12px;
 }
 
 #authUserLabel {
-  display: block;
-  margin-top: 5px;
   color: var(--green);
   font-size: 11px;
-  font-weight: 600;
 }
 
 .top-actions {
@@ -286,42 +203,31 @@ button:disabled {
   gap: 9px;
 }
 
-/* =====================================================
-   BUTTONS
-===================================================== */
+/* BUTTONS */
 
 .btn {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 7px;
   min-height: 39px;
   padding: 10px 16px;
   border: 1px solid transparent;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
-  transition: 0.2s;
 }
 
 .btn.primary {
   background: var(--green);
-  color: #ffffff;
+  color: white;
 }
 
-.btn.primary:hover {
-  background: var(--green-dark);
-}
+.btn.primary:hover { background: var(--green-dark); }
 
 .btn.secondary {
   border-color: var(--border);
-  background: #ffffff;
+  background: white;
   color: var(--text);
-}
-
-.btn.secondary:hover {
-  border-color: var(--green);
-  color: var(--green-dark);
 }
 
 .text-btn {
@@ -334,33 +240,12 @@ button:disabled {
   font-weight: 700;
 }
 
-/* =====================================================
-   PAGE VISIBILITY
-===================================================== */
+/* PAGES */
 
-.page {
-  display: none;
-  animation: fadeIn 0.2s ease;
-}
+.page { display: none; }
+.page.active { display: block; }
 
-.page.active {
-  display: block;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* =====================================================
-   DASHBOARD HERO
-===================================================== */
+/* DASHBOARD HERO */
 
 .hero {
   display: flex;
@@ -370,10 +255,9 @@ button:disabled {
   min-height: 185px;
   margin-bottom: 22px;
   padding: 30px;
-  overflow: hidden;
   border-radius: 16px;
-  background: linear-gradient(115deg, #245c30, #438f42);
-  color: #ffffff;
+  background: linear-gradient(115deg,#245c30,#438f42);
+  color: white;
   box-shadow: var(--shadow);
 }
 
@@ -387,12 +271,10 @@ button:disabled {
 .hero h2 {
   margin: 13px 0 9px;
   font-size: 26px;
-  font-weight: 800;
 }
 
 .hero p {
   max-width: 650px;
-  margin: 0;
   color: #e2f1df;
   font-size: 12px;
   line-height: 1.8;
@@ -401,96 +283,52 @@ button:disabled {
 .hero-date {
   min-width: 135px;
   padding: 17px;
-  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 11px;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,.12);
   text-align: center;
 }
 
 .hero-date span,
-.hero-date strong {
-  display: block;
-}
+.hero-date strong { display: block; }
 
-.hero-date span {
-  margin-bottom: 8px;
-  color: #d3ebce;
-  font-size: 11px;
-}
+.hero-date span { margin-bottom: 8px; font-size: 11px; }
+.hero-date strong { font-size: 16px; }
+.hero.compact { min-height: 135px; }
 
-.hero-date strong {
-  font-size: 16px;
-}
-
-.hero.compact {
-  min-height: 135px;
-}
-
-/* =====================================================
-   DASHBOARD SUMMARY CARDS
-===================================================== */
+/* DASHBOARD CARDS */
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4,minmax(0,1fr));
   gap: 16px;
   margin-bottom: 22px;
 }
 
 .card {
-  position: relative;
   padding: 21px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: #ffffff;
+  border-radius: 13px;
+  background: white;
   box-shadow: var(--shadow);
 }
 
-.card span,
-.card strong,
-.card small {
-  display: block;
-}
+.card span,.card strong,.card small { display: block; }
 
-.card span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-}
+.card span { color: var(--muted); font-size: 12px; }
+.card strong { margin: 13px 0 7px; color: var(--dark); font-size: 31px; }
+.card small { color: var(--muted); font-size: 11px; }
 
-.card strong {
-  margin: 13px 0 7px;
-  color: var(--dark);
-  font-size: 31px;
-  font-weight: 800;
-}
+.card.warning { border-top: 3px solid #eab308; }
+.card.danger { border-top: 3px solid #dc2626; }
+.card.success { border-top: 3px solid var(--green); }
 
-.card small {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.card.warning {
-  border-top: 3px solid var(--orange);
-}
-
-.card.danger {
-  border-top: 3px solid var(--red);
-}
-
-.card.success {
-  border-top: 3px solid var(--green);
-}
-
-/* =====================================================
-   PANELS
-===================================================== */
+/* PANELS */
 
 .panel {
   padding: 21px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: #ffffff;
+  border-radius: 13px;
+  background: white;
   box-shadow: var(--shadow);
 }
 
@@ -506,24 +344,15 @@ button:disabled {
   margin: 0;
   color: var(--dark);
   font-size: 15px;
-  font-weight: 800;
-}
-
-.panel-head small,
-.panel-head > span {
-  color: var(--muted);
-  font-size: 11px;
 }
 
 .grid-2 {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1.2fr .8fr;
   gap: 18px;
 }
 
-/* =====================================================
-   ALERT LIST
-===================================================== */
+/* ALERT LIST */
 
 .alert-list {
   display: flex;
@@ -531,8 +360,8 @@ button:disabled {
   gap: 10px;
 }
 
-.alert-item,
-.alert-list > div {
+.alert-list > div,
+.alert-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -542,14 +371,6 @@ button:disabled {
   border-radius: 8px;
   background: #fbfcfa;
   font-size: 12px;
-}
-
-.alert-item strong {
-  color: var(--dark);
-}
-
-.alert-item small {
-  color: var(--muted);
 }
 
 .type-summary {
@@ -562,12 +383,9 @@ button:disabled {
   padding: 11px;
   border-radius: 8px;
   background: var(--green-soft);
-  font-size: 12px;
 }
 
-/* =====================================================
-   VEHICLE REGISTER AND FILTERS
-===================================================== */
+/* VEHICLE FILTERS */
 
 .toolbar {
   display: flex;
@@ -581,15 +399,8 @@ button:disabled {
   padding: 10px 13px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #ffffff;
-  color: var(--text);
-  outline: none;
+  background: white;
   font-size: 12px;
-}
-
-.toolbar input:focus,
-.toolbar select:focus {
-  border-color: var(--green);
 }
 
 .toolbar .search {
@@ -597,14 +408,14 @@ button:disabled {
   min-width: 180px;
 }
 
+/* TABLES */
+
 .table-panel {
   padding: 0;
   overflow: hidden;
 }
 
-.table-panel > .panel-head {
-  padding: 19px 21px 0;
-}
+.table-panel > .panel-head { padding: 19px 21px 0; }
 
 .table-wrap {
   width: 100%;
@@ -618,9 +429,7 @@ table {
   font-size: 12px;
 }
 
-thead {
-  background: #f3f7f1;
-}
+thead { background: #f3f7f1; }
 
 th {
   padding: 14px 13px;
@@ -629,7 +438,6 @@ th {
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
 td {
@@ -639,22 +447,15 @@ td {
   vertical-align: middle;
 }
 
-tbody tr:hover {
-  background: #fafcf9;
-}
+tbody tr:hover { background: #fafcf9; }
 
-td button {
-  margin: 2px;
-}
+/* =========================================
+   EXPIRY INDICATORS
+   RED = EXPIRED
+   YELLOW = 1 TO 30 DAYS
+   GREEN = MORE THAN 30 DAYS
+========================================= */
 
-/* =====================================================
-   EXPIRY STATUS
-===================================================== */
-====================================
-   VEHICLE EXPIRY INDICATORS
-===================================== */
-
-/* Common status design */
 .status,
 .badge {
   display: inline-block;
@@ -664,7 +465,8 @@ td button {
   font-weight: 800;
 }
 
-/* Expired - RED */
+/* EXPIRED - RED */
+
 .status.expired,
 .badge.expired {
   background: #fee2e2;
@@ -672,7 +474,8 @@ td button {
   border: 1px solid #fca5a5;
 }
 
-/* Expiring within 30 days - YELLOW */
+/* EXPIRING WITHIN 30 DAYS - YELLOW */
+
 .status.warning,
 .badge.warning {
   background: #fef3c7;
@@ -680,20 +483,20 @@ td button {
   border: 1px solid #fcd34d;
 }
 
-/* More than 30 days - GREEN */
+/* MORE THAN 30 DAYS - GREEN */
+
 .status.safe,
 .badge.safe {
   background: #dcfce7;
   color: #166534;
   border: 1px solid #86efac;
 }
-/* =====================================================
-   REPORTS
-===================================================== */
+
+/* REPORTS */
 
 .report-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3,minmax(0,1fr));
   gap: 14px;
 }
 
@@ -712,28 +515,13 @@ td button {
   font-size: 24px;
 }
 
-.report-grid span {
-  color: var(--muted);
-  font-size: 11px;
-}
+/* SETTINGS */
 
-/* =====================================================
-   SETTINGS
-===================================================== */
-
-.settings-panel {
-  max-width: 700px;
-}
-
-.settings-panel h3 {
-  margin-top: 0;
-  color: var(--dark);
-}
+.settings-panel { max-width: 700px; }
 
 .settings-panel label {
   display: block;
   margin: 17px 0;
-  color: var(--text);
   font-size: 12px;
   font-weight: 700;
 }
@@ -745,12 +533,6 @@ td button {
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  outline: none;
-  font-size: 13px;
-}
-
-.settings-panel input:focus {
-  border-color: var(--green);
 }
 
 .note {
@@ -758,14 +540,11 @@ td button {
   padding: 13px;
   border-radius: 8px;
   background: var(--green-soft);
-  color: var(--text);
   font-size: 11px;
   line-height: 1.7;
 }
 
-/* =====================================================
-   VEHICLE ADD / EDIT MODAL
-===================================================== */
+/* VEHICLE MODAL */
 
 .modal {
   position: fixed;
@@ -776,13 +555,10 @@ td button {
   align-items: center;
   padding: 20px;
   overflow-y: auto;
-  background: rgba(19, 35, 23, 0.55);
+  background: rgba(19,35,23,.55);
 }
 
-.modal.show,
-.modal.active {
-  display: flex;
-}
+.modal.show,.modal.active { display: flex; }
 
 .modal-card {
   width: 100%;
@@ -791,8 +567,7 @@ td button {
   padding: 25px;
   overflow-y: auto;
   border-radius: 15px;
-  background: #ffffff;
-  box-shadow: 0 15px 60px rgba(0,0,0,0.2);
+  background: white;
 }
 
 .modal-head {
@@ -802,31 +577,25 @@ td button {
   margin-bottom: 20px;
 }
 
-.modal-head h3 {
-  margin: 0;
-  color: var(--dark);
-}
-
 .close {
   width: 35px;
   height: 35px;
   border: none;
   border-radius: 8px;
-  background: var(--red-light);
-  color: var(--red);
+  background: #fff0ef;
+  color: #d74747;
   font-size: 22px;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2,minmax(0,1fr));
   gap: 16px;
 }
 
 .form-grid label {
   display: grid;
   gap: 7px;
-  color: var(--text);
   font-size: 12px;
   font-weight: 700;
 }
@@ -839,17 +608,8 @@ td button {
   padding: 11px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #ffffff;
-  outline: none;
-  color: var(--text);
+  background: white;
   font-size: 12px;
-}
-
-.form-grid input:focus,
-.form-grid select:focus,
-.form-grid textarea:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px var(--green-light);
 }
 
 .modal-actions {
@@ -859,13 +619,9 @@ td button {
   margin-top: 23px;
 }
 
-/* =====================================================
-   USER MANAGEMENT
-===================================================== */
+/* USER MANAGEMENT */
 
-.user-page-heading {
-  margin-bottom: 20px;
-}
+.user-page-heading { margin-bottom: 20px; }
 
 .user-page-heading .eyebrow {
   color: var(--green);
@@ -878,33 +634,23 @@ td button {
   margin: 7px 0;
   color: var(--dark);
   font-size: 25px;
-  font-weight: 800;
 }
 
 .user-page-heading p {
-  margin: 0;
   color: var(--muted);
   font-size: 12px;
 }
 
-.user-create-panel {
-  margin-bottom: 20px;
-}
-
-.user-create-panel .panel-head {
-  padding-bottom: 13px;
-  border-bottom: 1px solid var(--border);
-}
+.user-create-panel { margin-bottom: 20px; }
 
 #users .form-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2,minmax(0,1fr));
   gap: 17px;
 }
 
 #users .form-grid label {
   display: grid;
   gap: 7px;
-  color: var(--text);
   font-size: 12px;
   font-weight: 700;
 }
@@ -915,17 +661,8 @@ td button {
   padding: 11px 12px;
   border: 1px solid #d5dfd1;
   border-radius: 8px;
-  background: #ffffff;
-  color: var(--text);
+  background: white;
   font-size: 13px;
-  outline: none;
-}
-
-#users .form-grid input:focus,
-#users .form-grid select:focus {
-  outline: none;
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px var(--green-light);
 }
 
 .user-form-footer {
@@ -944,18 +681,10 @@ td button {
   font-weight: 600;
 }
 
-#userMessage.success {
-  color: #2f7a29;
-}
+#userMessage.success { color: #2f7a29; }
+#userMessage.error { color: #c53939; }
 
-#userMessage.error {
-  color: #c53939;
-}
-
-#usersTable td {
-  padding: 13px;
-  vertical-align: middle;
-}
+#usersTable td { padding: 13px; }
 
 .user-status {
   display: inline-block;
@@ -981,16 +710,14 @@ td button {
   border-radius: 6px;
   background: #edf5ea;
   color: #315a35;
-  font-size: 11px;
   font-weight: 700;
 }
 
 .user-action-btn {
   padding: 7px 11px;
   border-radius: 7px;
-  background: #ffffff;
+  background: white;
   cursor: pointer;
-  font-size: 11px;
   font-weight: 700;
 }
 
@@ -1010,94 +737,49 @@ td button {
   font-weight: 700;
 }
 
-#usersNavBtn {
-  margin-top: 5px;
-}
+#usersNavBtn { margin-top: 5px; }
 
-/* =====================================================
-   EMPTY STATES
-===================================================== */
+/* EMPTY STATES */
 
-.empty-state,
-.table-empty {
+.empty-state,.table-empty {
   padding: 30px !important;
   color: var(--muted);
   text-align: center;
-  font-size: 12px;
 }
 
-/* =====================================================
-   SCROLLBAR
-===================================================== */
+/* SCROLLBAR */
 
-::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
-}
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: #f1f4ef; }
+::-webkit-scrollbar-thumb { border-radius: 10px; background: #c8d5c4; }
 
-::-webkit-scrollbar-track {
-  background: #f1f4ef;
-}
+/* TABLET */
 
-::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background: #c8d5c4;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #93ad8d;
-}
-
-/* =====================================================
-   TABLET RESPONSIVE
-===================================================== */
-
-@media (max-width: 1050px) {
-  .sidebar {
-    width: 205px;
-  }
-
+@media(max-width:1050px) {
+  .sidebar { width: 205px; }
   .main {
     width: calc(100% - 205px);
     margin-left: 205px;
     padding: 23px;
   }
-
-  .cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
+  .cards { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .grid-2 { grid-template-columns: 1fr; }
 }
 
-/* =====================================================
-   MOBILE RESPONSIVE
-===================================================== */
+/* MOBILE */
 
-@media (max-width: 700px) {
-  .app-shell {
-    display: block;
-  }
+@media(max-width:700px) {
+  .app-shell { display: block; }
 
   .sidebar {
     position: relative;
     width: 100%;
     height: auto;
     padding: 12px;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
   }
 
-  .brand {
-    padding: 5px 8px 12px;
-  }
-
-  .brand img {
-    width: 39px;
-    height: 39px;
-  }
+  .brand { padding: 5px 8px 12px; }
+  .brand img { width: 39px; height: 39px; }
 
   .sidebar nav {
     flex-direction: row;
@@ -1113,9 +795,7 @@ td button {
     font-size: 11px;
   }
 
-  .sidebar-footer {
-    display: none;
-  }
+  .sidebar-footer { display: none; }
 
   .main {
     width: 100%;
@@ -1129,14 +809,8 @@ td button {
     gap: 13px;
   }
 
-  .topbar h1 {
-    font-size: 21px;
-  }
-
-  .top-actions {
-    width: 100%;
-    flex-wrap: wrap;
-  }
+  .topbar h1 { font-size: 21px; }
+  .top-actions { width: 100%; flex-wrap: wrap; }
 
   .hero {
     align-items: flex-start;
@@ -1144,30 +818,18 @@ td button {
     padding: 23px;
   }
 
-  .hero h2 {
-    font-size: 21px;
-  }
-
-  .hero-date {
-    width: 100%;
-  }
+  .hero h2 { font-size: 21px; }
+  .hero-date { width: 100%; }
 
   .cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2,minmax(0,1fr));
     gap: 10px;
   }
 
-  .card {
-    padding: 15px;
-  }
+  .card { padding: 15px; }
+  .card strong { font-size: 25px; }
 
-  .card strong {
-    font-size: 25px;
-  }
-
-  .toolbar {
-    flex-wrap: wrap;
-  }
+  .toolbar { flex-wrap: wrap; }
 
   .toolbar input,
   .toolbar select {
@@ -1185,50 +847,20 @@ td button {
     flex-direction: column;
   }
 
-  .user-form-footer button {
-    width: 100%;
-  }
+  .user-form-footer button { width: 100%; }
 
-  .report-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .report-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 
-  .modal-card {
-    padding: 18px;
-  }
-
-  .panel {
-    padding: 15px;
-  }
-
-  .table-panel {
-    padding: 0;
-  }
-
-  .table-panel > .panel-head {
-    padding: 15px 13px 0;
-  }
+  .modal-card { padding: 18px; }
+  .panel { padding: 15px; }
+  .table-panel { padding: 0; }
+  .table-panel > .panel-head { padding: 15px 13px 0; }
 }
 
-/* =====================================================
-   SMALL MOBILE
-===================================================== */
+/* SMALL MOBILE */
 
-@media (max-width: 400px) {
-  .cards {
-    grid-template-columns: 1fr;
-  }
-
-  .report-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .login-card {
-    padding: 25px 19px;
-  }
-
-  .top-actions .btn {
-    flex: 1;
-    padding: 9px;
-  }
+@media(max-width:400px) {
+  .cards,.report-grid { grid-template-columns: 1fr; }
+  .login-card { padding: 25px 19px; }
+  .top-actions .btn { flex: 1; padding: 9px; }
 }
