@@ -650,34 +650,7 @@ td button {
 /* =====================================================
    EXPIRY STATUS
 ===================================================== */
-
-.status,
-.badge {
-  display: inline-block;
-  padding: 5px 9px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.status.expired,
-.badge.expired {
-  background: var(--red-light);
-  color: #b42f2f;
-}
-
-.status.warning,
-.badge.warning {
-  background: var(--orange-light);
-  color: #a66b16;
-}
-
-.status.safe,
-.badge.safe {
-  background: var(--green-light);
-  color: #367332;
-}
-* =====================================
+====================================
    VEHICLE EXPIRY INDICATORS
 ===================================== */
 
