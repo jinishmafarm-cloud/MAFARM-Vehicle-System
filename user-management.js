@@ -19,7 +19,7 @@ import {
 
 // Use the same Firebase project as the existing MAFARM application.
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_EXISTING_FIREBASE_API_KEY",
+  apiKey: "AIzaSyA_LX4yzVFjyQ-PTqmlD-pzvjVfTcFHSNw",
   authDomain: "vehicle-details-d8d69.firebaseapp.com",
   projectId: "vehicle-details-d8d69",
   storageBucket: "vehicle-details-d8d69.firebasestorage.app",
