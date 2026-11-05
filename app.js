@@ -1164,3 +1164,64 @@ onAuthStateChanged(auth, async (user) => {
     showLogin("Unable to verify your account. Check Firestore rules and try again.");
   }
 });
+
+/* ==========================================
+   MAFARM EXPIRY COLOUR FIX
+   Matches the actual app.js class names
+========================================== */
+
+/* EXPIRED - RED */
+.date-status.red,
+.pill.red {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5 !important;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 800;
+}
+
+/* EXPIRING WITHIN 30 DAYS - YELLOW */
+.date-status.amber,
+.pill.amber {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1px solid #fcd34d !important;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 800;
+}
+
+/* MORE THAN 30 DAYS - GREEN */
+.date-status.green,
+.pill.green {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+    border: 1px solid #86efac !important;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 800;
+}
+
+/* Dashboard alert rows */
+.alert-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Vehicle statutory date display */
+.date-status {
+    display: inline-block;
+    font-size: 11px;
+}
+
+/* Status pills */
+.pill {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+}
+
